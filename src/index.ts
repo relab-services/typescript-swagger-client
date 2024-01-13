@@ -31,16 +31,33 @@ void (async function () {
         templates: path.resolve(__dirname, 'templates'),
     }
 
-    await fs.rm(paths.output, { recursive: true, force: true })
-    await fs.mkdir(paths.output)
+    await cleanup(paths.output, [paths.input])
 
     await generate(paths)
 
-    const output = await fs.readdir(paths.output, { recursive: true, withFileTypes: true })
-    const outputFiles = output.filter(x => x.isFile()).map(({ path: filePath, name }) => path.resolve(filePath, name))
-
-    await banner(outputFiles)
+    await banner(
+        (
+            await fs.readdir(paths.output, {
+                recursive: true,
+                withFileTypes: true,
+            })
+        )
+            .filter(x => x.isFile() && path.relative(path.resolve(x.path, x.name), paths.input))
+            .map(({ path: filePath, name }) => path.resolve(filePath, name))
+    )
 })()
+
+async function cleanup(folder: string, skip: string[]) {
+    const content = await fs.readdir(folder, { withFileTypes: true })
+    for (const item of content) {
+        const fullPath = path.resolve(item.path, item.name)
+        const shouldSkip = skip.some(s => !path.relative(fullPath, s))
+
+        if (!shouldSkip) {
+            await fs.rm(fullPath, { recursive: true })
+        }
+    }
+}
 
 async function generate(paths: Paths) {
     await generateApi({
@@ -60,7 +77,7 @@ async function generate(paths: Paths) {
         unwrapResponseData: true,
         defaultResponseType: 'void',
         singleHttpClient: true,
-        cleanOutput: true,
+        cleanOutput: false,
         enumNamesAsValues: false,
         moduleNameFirstTag: true,
         generateUnionEnums: true,

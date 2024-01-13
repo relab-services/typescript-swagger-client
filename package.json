@@ -13,6 +13,7 @@
   "scripts": {
     "build": "rollup -c",
     "prepublish": "npm run build",
+    "prepack": "npm run build",
     "lint": "eslint . --ext ts,tsx",
     "format": "prettier --write \"**/*.ts*\""
   },
@@ -34,7 +35,9 @@
   },
   "homepage": "https://github.com/sergeyzwezdin/typescript-swagger-client#readme",
   "dependencies": {
-    "typescript": "^5.3.3"
+    "commander": "11.1.0",
+    "lodash": "4.17.21",
+    "swagger-typescript-api": "13.0.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "25.0.7",
@@ -47,18 +50,23 @@
     "@sergeyzwezdin/eslint-config": "^2.2.1",
     "@sergeyzwezdin/prettier-config": "^1.1.1",
     "@sergeyzwezdin/semantic-release-commits-config": "1.0.3",
+    "@types/lodash": "4.14.202",
     "@types/node": "20.11.0",
     "eslint": "^8.56.0",
     "rollup": "4.9.5",
+    "rollup-plugin-copy": "3.5.0",
     "rollup-plugin-delete": "2.0.0",
     "rollup-plugin-dts": "6.1.0",
     "rollup-plugin-peer-deps-external": "2.2.4",
     "semantic-release": "23.0.0",
     "semantic-release-telegram-bot": "2.0.1",
-    "tslib": "2.6.2"
+    "ts-node": "10.9.2",
+    "tslib": "2.6.2",
+    "typescript": "5.3.3"
   },
   "prettier": "@sergeyzwezdin/prettier-config",
   "eslintConfig": {
-    "extends": "@sergeyzwezdin/eslint-config/node"
+    "extends": "@sergeyzwezdin/eslint-config/node",
+    "ignorePatterns": ["lib"]
   }
 }

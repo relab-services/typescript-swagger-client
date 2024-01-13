@@ -1,0 +1,155 @@
+<%
+const { modelTypes, utils, route, config } = it;
+const { requestBodyInfo, responseBodyInfo, specificArgNameResolver } = route;
+const { _, getInlineParseContent, getParseContent, parseSchema, getComponentByRef, require } = utils;
+const { parameters, path, method, payload, query, formData, security, requestParams } = route.request;
+const { type, errorType, contentTypes } = route.response;
+const { HTTP_CLIENT, RESERVED_REQ_PARAMS_ARG_NAMES } = config.constants;
+const routeDocs = includeFile("./route-docs", { config, route, utils });
+const queryName = (query && query.name) || "query";
+const pathParams = _.values(parameters);
+const pathParamsNames = _.map(pathParams, "name");
+
+if (payload && payload.type && payload.type.startsWith('{')) {
+    // camel case to form params
+    payload.type = payload.type.replace(/^(\s+)([^/\\*].+?)(:.+?)$/gm,
+            (_, a, b, c) => `${a}${b.substring(0, 1).toLowerCase()}${b.substring(1)}${c}`)
+}
+
+const isFetchTemplate = config.httpClientType === HTTP_CLIENT.FETCH;
+
+const requestConfigParam = {
+    name: specificArgNameResolver.resolve(RESERVED_REQ_PARAMS_ARG_NAMES),
+    optional: true,
+    type: "RequestParams",
+    defaultValue: "{}"
+}
+
+const argToTmpl = ({ name, optional, type, defaultValue }) => `${name}${!defaultValue && optional ? '?' : ''}: ${type}${defaultValue ? ` = ${defaultValue}` : ''}`;
+
+const rawWrapperArgs = (config.extractRequestParams ?
+    _.compact([
+        requestParams && {
+          name: pathParams.length ? `{ ${_.join(pathParamsNames, ", ")}, ...${queryName} }` : queryName,
+          optional: false,
+          type: getInlineParseContent(requestParams),
+        },
+        ...(!requestParams ? pathParams : []),
+        payload,
+        requestConfigParam,
+    ]) :
+    _.compact([
+        ...pathParams,
+        query,
+        payload,
+        requestConfigParam,
+    ])).map(param => {
+        if (param.name === 'data') {
+            return {
+                ...param,
+                type: /^{/g.test(param.type) ? param.type : param.type
+            }
+
+        } else {
+            return param;
+        }
+})
+
+const wrapperArgs = _
+    // Sort by optionality
+    .sortBy(rawWrapperArgs, [o => o.optional])
+    .map(argToTmpl)
+    .join(', ')
+
+// RequestParams["type"]
+const requestContentKind = {
+    "JSON": "ContentType.Json",
+    "URL_ENCODED": "ContentType.UrlEncoded",
+    "FORM_DATA": "ContentType.FormData",
+    "TEXT": "ContentType.Text",
+}
+// RequestParams["format"]
+const responseContentKind = {
+    "JSON": '"json"',
+    "IMAGE": '"blob"',
+    "FORM_DATA": isFetchTemplate ? '"formData"' : '"document"'
+}
+
+const bodyTmpl = _.get(payload, "name") || null;
+const queryTmpl = (query != null && queryName) || null;
+const bodyContentKindTmpl = requestContentKind[requestBodyInfo.contentKind] || null;
+const responseFormatTmpl = responseContentKind[responseBodyInfo.success && responseBodyInfo.success.schema && responseBodyInfo.success.schema.contentKind] || null;
+const securityTmpl = security ? 'true' : null;
+
+const describeReturnType = () => {
+    if (!config.toJS) return "";
+
+    switch(config.httpClientType) {
+        case HTTP_CLIENT.AXIOS: {
+          return `Promise<AxiosResponse<${type}>>`
+        }
+        default: {
+          return `Promise<HttpResponse<${type}, ${errorType}>`
+        }
+    }
+}
+
+%>
+/**
+<%~ routeDocs.description %>
+
+ *<% /* Here you can add some other JSDoc tags */ %>
+
+<%~ routeDocs.lines %>
+
+ */
+<%~ route.routeName.usage %> = (<%~ wrapperArgs %>)<%~ config.toJS ? `: ${describeReturnType()}` : "" %> => {
+    return <%~ config.singleHttpClient ? 'this.http.request' : 'this.request' %><<%~ type %>, <%~ errorType %>>({
+        path: `<%~ path %>`,
+        method: '<%~ _.upperCase(method) %>',
+        <%~ queryTmpl ? `query: ${queryTmpl},` : '' %>
+        <%~ bodyTmpl ? `body: ${bodyTmpl},` : '' %>
+        <%~ securityTmpl ? `secure: ${securityTmpl},` : '' %>
+        <%~ bodyContentKindTmpl ? `type: ${bodyContentKindTmpl},` : '' %>
+        <%~ responseFormatTmpl ? `format: ${responseFormatTmpl},` : '' %>
+        ...<%~ _.get(requestConfigParam, "name") %>,
+    })
+    <% if (!(['void', 'string', '(string)[]', 'number', '(number)[]', 'boolean', '(boolean)[]', 'Date', '(Date)[]'].includes(type))) { %>
+        <%
+            const contents = Object.values(route.responseBodySchema?.content ?? {});
+            const content = contents.length > 0 ? contents[0] : undefined;
+            const contentType = content?.schema?.type;
+        %>
+        .then((source: <%= type %>) =>
+        <%if (contentType === 'array') { %>source.map(parse_<%= type.substring(1, type.length - 3).replace(/\W+/g, '_') %>)<%} else {%>parse_<%= type.replace(/\W+/g, '_') %>(source)<%}%>
+        );
+    <% } else if (type === 'Date' || type === '(Date)[]') { %>
+        <%
+            const contents = Object.values(route.responseBodySchema?.content ?? {});
+            const content = contents.length > 0 ? contents[0] : undefined;
+            const contentType = content?.schema?.type;
+        %>
+        .then((source: (<%= type.replace(/\W+/g, '') %> | string)<%=contentType === 'array' ? '[]': ''%>) => {
+        <%if (contentType === 'array') { %>
+            return source.map(x => {
+                const value = x instanceof Date ? x : new Date(x);
+                if (value && isNaN(value.getTime())) {
+                    throw new Error(`Wrong server response. Invalid date field: ${source}`);
+                }
+                return value;
+            });
+        <% } else {%>
+            const value = source instanceof Date ? source : new Date(source);
+            if (value && isNaN(value.getTime())) {
+                throw new Error(`Wrong server response. Invalid date field: ${source}`);
+            }
+            return value;
+        <%}%>
+        }
+        );
+<% }%>
+
+/*
+<%- JSON.stringify(route.response, null, 2) %>
+*/
+}

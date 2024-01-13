@@ -1,0 +1,14 @@
+<%
+const { contract, utils } = it;
+const { formatDescription, require, _ } = utils;
+%>
+export interface <%~ contract.name %> {
+  <% for (const field of contract.$content) { %>
+    <%~ includeFile('./object-field-jsdoc.ejs', { ...it, field }) %>
+    <%~ field.name %><%~ field.isRequired ? '' : '?' %>: <%~ field.value %><%~ field.isNullable ? ' | null' : ''%>;
+  <% } %>
+}
+
+export const process_<%~ contract.name %> = (source: <%~ contract.name %>): <%~ contract.name %> => {
+  return source;
+}

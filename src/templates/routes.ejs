@@ -1,0 +1,9 @@
+<%
+const { utils, config, routes, modelTypes } = it;
+const { pascalCase } = utils;
+%>
+<% if (routes.combined) { %>
+    <% for (const { routes: combinedRoutes = [], moduleName } of routes.combined) { %>
+        export * from './<%~ pascalCase(moduleName) %>';
+    <% } %>
+<% } %>

@@ -1,6 +1,6 @@
 {
   "name": "@sergeyzwezdin/typescript-swagger-client",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Utility package to generate typescript client by Swagger definition",
   "main": "lib/index.ts",
   "types": "lib/index.d.ts",
@@ -67,6 +67,8 @@
   "prettier": "@sergeyzwezdin/prettier-config",
   "eslintConfig": {
     "extends": "@sergeyzwezdin/eslint-config/node",
-    "ignorePatterns": ["lib"]
+    "ignorePatterns": [
+      "lib"
+    ]
   }
 }

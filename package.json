@@ -1,0 +1,64 @@
+{
+  "name": "@sergeyzwezdin/typescript-swagger-client",
+  "version": "1.0.0",
+  "description": "Utility package to generate typescript client by Swagger definition",
+  "main": "lib/index.ts",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*.*"
+  ],
+  "bin": {
+    "typescript-swagger-client": "./lib/index.js"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "prepublish": "npm run build",
+    "lint": "eslint . --ext ts,tsx",
+    "format": "prettier --write \"**/*.ts*\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sergeyzwezdin/typescript-swagger-client.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "swagger",
+    "typescript"
+  ],
+  "author": "Sergey Zwezdin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sergeyzwezdin/typescript-swagger-client/issues"
+  },
+  "homepage": "https://github.com/sergeyzwezdin/typescript-swagger-client#readme",
+  "dependencies": {
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "25.0.7",
+    "@rollup/plugin-node-resolve": "15.2.3",
+    "@rollup/plugin-terser": "0.4.4",
+    "@rollup/plugin-typescript": "11.1.6",
+    "@semantic-release/git": "10.0.1",
+    "@semantic-release/github": "9.2.6",
+    "@semantic-release/npm": "11.0.2",
+    "@sergeyzwezdin/eslint-config": "^2.2.1",
+    "@sergeyzwezdin/prettier-config": "^1.1.1",
+    "@sergeyzwezdin/semantic-release-commits-config": "1.0.3",
+    "@types/node": "20.11.0",
+    "eslint": "^8.56.0",
+    "rollup": "4.9.5",
+    "rollup-plugin-delete": "2.0.0",
+    "rollup-plugin-dts": "6.1.0",
+    "rollup-plugin-peer-deps-external": "2.2.4",
+    "semantic-release": "23.0.0",
+    "semantic-release-telegram-bot": "2.0.1",
+    "tslib": "2.6.2"
+  },
+  "prettier": "@sergeyzwezdin/prettier-config",
+  "eslintConfig": {
+    "extends": "@sergeyzwezdin/eslint-config/node"
+  }
+}

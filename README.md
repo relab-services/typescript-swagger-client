@@ -20,8 +20,6 @@ Parameters of `typescript-swagger-client`:
 - `--input` - JSON-file path in your project that contains OpenAPI definition
 - `--output` - Folder for generated code
 
-```
-
 ## License
 
 Released under [MIT](/LICENSE) by [Sergey Zwezdin](https://github.com/sergeyzwezdin).

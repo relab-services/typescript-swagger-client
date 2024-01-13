@@ -42,15 +42,15 @@ void (async function () {
                 withFileTypes: true,
             })
         )
-            .filter(x => x.isFile() && path.relative(path.resolve(x.path, x.name), paths.input))
-            .map(({ path: filePath, name }) => path.resolve(filePath, name))
+            .filter(x => x.isFile() && path.relative(path.resolve(paths.output, x.name), paths.input))
+            .map(({ name }) => path.resolve(paths.output, name))
     )
 })()
 
 async function cleanup(folder: string, skip: string[]) {
     const content = await fs.readdir(folder, { withFileTypes: true })
     for (const item of content) {
-        const fullPath = path.resolve(item.path, item.name)
+        const fullPath = path.resolve(folder, item.name)
         const shouldSkip = skip.some(s => !path.relative(fullPath, s))
 
         if (!shouldSkip) {

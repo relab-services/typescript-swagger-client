@@ -13,6 +13,7 @@ Utility package to generate typescript client by Swagger/OpenAPI definition.
     "swagger-client": "typescript-swagger-client --input @api/api.generated.json --output @api/generated"
   }
 }
+```
 3. `npm run swagger-client`
 
 Parameters of `typescript-swagger-client`:

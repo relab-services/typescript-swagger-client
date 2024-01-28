@@ -30,8 +30,9 @@ const dataContractTemplates = {
   },
   type: (contract) => {
     return `type ${fixTypeName(contract.name)}${buildGenerics(contract)} = ${contract.content}`;
-  },
+  }
 }
+
 %>
 
 <% if (config.internalTemplateOptions.addUtilRequiredKeysType) { %>
@@ -63,10 +64,41 @@ type <%~ config.Ts.CodeGenKeyword.UtilRequiredKeys %><T, K extends keyof T> = Om
     <%~ contract.internal ? '' : 'export'%> <%~ (dataContractTemplates[contract.typeIdentifier] || dataContractTemplates.type)(contract) %>
   }
 
-  <% if (contract.typeData.type === 'object') { %>
+  <% if (contract.typeData.type === 'object' || contract.typeData.type === 'primitive') { %>
   export function parse_<%= contract.name.replace(/\W+/g, '_') %>(source: <%= contract.name %>){
       if (source) {
-        <% for (const [name, property] of Object.entries(contract.properties)) {
+        <% if (contract.allOf && Array.isArray(contract.allOf)) { %>
+          <% for (const item of contract.allOf) { %>
+            <% if (item.$parsed?.name && item.$parsed.name.toLowerCase().startsWith('dto.')) { %>
+              source = parse_<%= item.$parsed.name.replace(/\W+/g, '_') %>(source) as <%= contract.name %>;
+            <% } %>
+            <% if (item.properties) { %>
+              <% for (const [name, property] of Object.entries(item.properties)) {
+                const refSchema = modelTypes.find(x => x.name === property.$parsed.name);
+                if (refSchema && refSchema.type === 'enum') {
+                  continue;
+                }
+              %>
+              <% if (property.format === 'date-time') { %>
+                source.<%= name %> = source.<%= name %> && !(source.<%= name %> as unknown instanceof Date) ? new Date(source.<%= name %>) : source.<%= name %>;
+                if (source.<%= name %> && isNaN(source.<%= name %>.getTime())) {
+                throw new Error(`Wrong server response. Invalid date field <%= name %>: ${source.<%= name %>}`);
+                }
+              <% } else if (false && property.format === 'int32') { %>
+                source.<%= name %> = source.<%= name %> ? parseInt(String(source.<%= name %>)) : source.<%= name %>;
+              <% } else if (false && property.format === 'float') { %>
+                source.<%= name %> = source.<%= name %> ? parseFloat(String(source.<%= name %>)) : source.<%= name %>;
+              <% } else if (property.type === 'array' && property.items && property.items.$ref && property.items.$parsed) { %>
+                source.<%= name %> = source.<%= name %> ? source.<%= name %>.map(parse_<%= property.items.$parsed.name.replace(/\W+/g, '_') %>) : source.<%= name %>;
+              <% } else if (property.$ref && property.$parsed) { %>
+                source.<%= name %> = source.<%= name %> ? parse_<%= property.$parsed.name.replace(/\W+/g, '_') %>(source.<%= name %>) : source.<%= name %>;
+              <% } %>
+            <% } %>
+            <% } %>
+          <% } %>
+        <% } %>
+
+        <% for (const [name, property] of Object.entries(contract.properties || {})) {
              const refSchema = modelTypes.find(x => x.name === property.$parsed.name);
              if (refSchema && refSchema.type === 'enum') {
                continue;

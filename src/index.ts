@@ -116,7 +116,16 @@ async function generate(paths: Paths) {
                               field?: string
                           }[]
                     required?: string[]
-                    properties?: Record<string, { nullable?: boolean; parsed: {} }>
+                    properties?: Record<
+                        string,
+                        {
+                            nullable?: boolean
+                            $parsed: {
+                                nullable?: boolean
+                                content?: string
+                            }
+                        }
+                    >
                 }
             ) => {
                 if (originalSchema.type === 'string' && ['date-time', 'date'].includes(originalSchema.format)) {
@@ -124,27 +133,28 @@ async function generate(paths: Paths) {
                 }
 
                 // Workaround to get rid of `null` type for nullable types
-                if (parsedSchema.required && parsedSchema.properties) {
+                if (parsedSchema.properties) {
                     for (const [propertyName, propertyDefinition] of Object.entries(parsedSchema.properties)) {
-                        if (!parsedSchema.required.includes(propertyName) && propertyDefinition.nullable !== undefined) {
+                        if (propertyDefinition.nullable !== undefined) {
                             delete propertyDefinition.nullable
+                        }
 
-                            if (Array.isArray(parsedSchema.content)) {
-                                const prop = parsedSchema.content.find(x => x.name === propertyName)
-                                if (prop) {
-                                    prop.nullable = false
-                                    prop.isNullable = false
-                                    if (prop.value)
-                                        prop.value = prop.value
-                                            .replace(/\|\s+null/i, '')
-                                            .replace(/null\s+\|/i, '')
-                                            .trim()
-                                    if (prop.field)
-                                        prop.field = prop.field
-                                            .replace(/\|\s+null/i, '')
-                                            .replace(/null\s+\|/i, '')
-                                            .trim()
-                                }
+                        if (Array.isArray(parsedSchema.content)) {
+                            const parsedProperty = parsedSchema.content.find(x => x.name.replace(/['"]+/g, '') === propertyName)
+
+                            if (parsedProperty) {
+                                parsedProperty.nullable = false
+                                parsedProperty.isNullable = false
+                                if (parsedProperty.value)
+                                    parsedProperty.value = parsedProperty.value
+                                        .replace(/\|\s+null/i, '')
+                                        .replace(/null\s+\|/i, '')
+                                        .trim()
+                                if (parsedProperty.field)
+                                    parsedProperty.field = parsedProperty.field
+                                        .replace(/\|\s+null/i, '')
+                                        .replace(/null\s+\|/i, '')
+                                        .trim()
                             }
                         }
                     }

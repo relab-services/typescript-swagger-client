@@ -101,9 +101,53 @@ async function generate(paths: Paths) {
         ],
 
         hooks: {
-            onParseSchema: (originalSchema: { type: string; format: string }, parsedSchema) => {
+            onParseSchema: (
+                originalSchema: { type: string; format: string },
+                parsedSchema: {
+                    $ref?: string
+                    name?: string
+                    content:
+                        | string
+                        | {
+                              name: string
+                              nullable?: boolean
+                              isNullable?: boolean
+                              value?: string
+                              field?: string
+                          }[]
+                    required?: string[]
+                    properties?: Record<string, { nullable?: boolean; parsed: {} }>
+                }
+            ) => {
                 if (originalSchema.type === 'string' && ['date-time', 'date'].includes(originalSchema.format)) {
                     parsedSchema.content = 'Date'
+                }
+
+                // Workaround to get rid of `null` type for nullable types
+                if (parsedSchema.required && parsedSchema.properties) {
+                    for (const [propertyName, propertyDefinition] of Object.entries(parsedSchema.properties)) {
+                        if (!parsedSchema.required.includes(propertyName) && propertyDefinition.nullable !== undefined) {
+                            delete propertyDefinition.nullable
+
+                            if (Array.isArray(parsedSchema.content)) {
+                                const prop = parsedSchema.content.find(x => x.name === propertyName)
+                                if (prop) {
+                                    prop.nullable = false
+                                    prop.isNullable = false
+                                    if (prop.value)
+                                        prop.value = prop.value
+                                            .replace(/\|\s+null/i, '')
+                                            .replace(/null\s+\|/i, '')
+                                            .trim()
+                                    if (prop.field)
+                                        prop.field = prop.field
+                                            .replace(/\|\s+null/i, '')
+                                            .replace(/null\s+\|/i, '')
+                                            .trim()
+                                }
+                            }
+                        }
+                    }
                 }
 
                 return parsedSchema

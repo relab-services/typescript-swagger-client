@@ -22,7 +22,8 @@
     "url": "git+https://github.com/relab-services/typescript-swagger-client.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "keywords": [
     "swagger",

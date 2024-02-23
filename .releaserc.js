@@ -1,4 +1,4 @@
-const common = require('@sergeyzwezdin/semantic-release-commits-config');
+const common = require('@relab/semantic-release-commits-config');
 
 module.exports = {
     ...common,

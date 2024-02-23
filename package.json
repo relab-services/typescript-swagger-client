@@ -1,5 +1,5 @@
 {
-  "name": "@sergeyzwezdin/typescript-swagger-client",
+  "name": "@relab/typescript-swagger-client",
   "version": "1.2.4",
   "description": "Utility package to generate typescript client by Swagger definition",
   "main": "lib/index.ts",
@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sergeyzwezdin/typescript-swagger-client.git"
+    "url": "git+https://github.com/relab-services/typescript-swagger-client.git"
   },
   "publishConfig": {
     "access": "public"
@@ -31,15 +31,18 @@
   "author": "Sergey Zwezdin",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sergeyzwezdin/typescript-swagger-client/issues"
+    "url": "https://github.com/relab-services/typescript-swagger-client/issues"
   },
-  "homepage": "https://github.com/sergeyzwezdin/typescript-swagger-client#readme",
+  "homepage": "https://github.com/relab-services/typescript-swagger-client#readme",
   "dependencies": {
     "commander": "11.1.0",
     "lodash": "4.17.21",
     "swagger-typescript-api": "13.0.3"
   },
   "devDependencies": {
+    "@relab/eslint-config": "2.2.3",
+    "@relab/prettier-config": "1.1.3",
+    "@relab/semantic-release-commits-config": "1.0.8",
     "@rollup/plugin-commonjs": "25.0.7",
     "@rollup/plugin-node-resolve": "15.2.3",
     "@rollup/plugin-terser": "0.4.4",
@@ -47,9 +50,6 @@
     "@semantic-release/git": "10.0.1",
     "@semantic-release/github": "9.2.6",
     "@semantic-release/npm": "11.0.2",
-    "@sergeyzwezdin/eslint-config": "^2.2.1",
-    "@sergeyzwezdin/prettier-config": "^1.1.1",
-    "@sergeyzwezdin/semantic-release-commits-config": "1.0.3",
     "@types/lodash": "4.14.202",
     "@types/node": "20.11.0",
     "eslint": "^8.56.0",
@@ -64,9 +64,9 @@
     "tslib": "2.6.2",
     "typescript": "5.3.3"
   },
-  "prettier": "@sergeyzwezdin/prettier-config",
+  "prettier": "@relab/prettier-config",
   "eslintConfig": {
-    "extends": "@sergeyzwezdin/eslint-config/node",
+    "extends": "@relab/eslint-config/node",
     "ignorePatterns": [
       "lib"
     ]

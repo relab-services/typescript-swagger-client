@@ -1,10 +1,10 @@
-# @sergeyzwezdin/typescript-swagger-client
+# @relab/typescript-swagger-client
 
 Utility package to generate typescript client by Swagger/OpenAPI definition.
 
 ## Usage
 
-1. `npm install --save-dev @sergeyzwezdin/typescript-swagger-client`
+1. `npm install --save-dev @relab/typescript-swagger-client`
 2. Add command to `scripts` section of `package.json` file
 ```json
 {
